@@ -32,6 +32,7 @@ AAIcar::AAIcar()
 		CarMesh_1 = MeshFinder.Object;
 
 	}
+
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshFinder2(
 		TEXT("/Game/Digtial/Material/Car/Car2/Car_2.Car_2")
 	);
@@ -44,23 +45,7 @@ AAIcar::AAIcar()
 	MeshCandidates.Add(CarMesh_2);
 	CarComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Car"));
 	CarComponent->SetupAttachment(Root);
-	/*CarComponent->SetStaticMesh(CarMesh_1);*/
 	CarComponent->SetRelativeScale3D(FVector(0.1, 0.1, 0.1));
-	//if (CarComponent)
-	//{
-	//	FVector Size = CarComponent->Bounds.BoxExtent*2;
-	//	VehicleLength = Size.X;
-	//	UMaterialInstanceDynamic* CarDynamicMaterial = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, CarMaterialInterface);
-	//	FVector4 CarColor(
-	//		FMath::RandRange(0.f, 1.f),
-	//		FMath::RandRange(0.f, 1.f),
-	//		FMath::RandRange(0.f, 1.f),
-	//		1.f
-	//	);
-	//	CarDynamicMaterial->SetVectorParameterValue(TEXT("Param"), CarColor);
-	//	CarComponent->SetMaterial(0, CarDynamicMaterial);
-	//}
-	/*CarComponent->SetRelativeRotation(FRotator(0, 90, 0));*/
 	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(
 		TEXT("StimuliSource")
 		);
@@ -92,6 +77,9 @@ void AAIcar::BeginPlay()
 				CarColor
 			);
 		}
+		FVector CarSize = CarComponent->Bounds.BoxExtent * 2;
+		VehicleLength = CarSize.X;
+
 	}
 }
 

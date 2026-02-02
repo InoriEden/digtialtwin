@@ -112,12 +112,10 @@ void ASplineRoad::CreateRoad()
 
 void ASplineRoad::CreateCar(int num)
 {
-	
+	float Target = 0;
 	for (int i = 0; i <= num; i++)
 	{
-		float SpawnStart = 0;
-		float RandomLocation = FMath::RandRange(10, 15);
-		float Target = SpawnStart + RandomLocation * i;
+		
 		if (Target < Spline->GetSplineLength())
 		{
 			FTransform SpawnTransform;
@@ -140,18 +138,9 @@ void ASplineRoad::CreateCar(int num)
 				);
 			if (SpawnedActor)
 			{
-				/*UMaterialInstanceDynamic* CarDynamicMaterial = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, CarMaterialInterface);
-				FVector4 CarColor(
-					FMath::RandRange(0.f, 1.f),
-					FMath::RandRange(0.f, 1.f),
-					FMath::RandRange(0.f, 1.f),
-					1.f
-				);
-				CarDynamicMaterial->SetVectorParameterValue(TEXT("Param"), CarColor);
-				SpawnedActor->CarComponent->SetMaterial(0, CarDynamicMaterial);*/
 				SpawnedActor->SplineRoad = this;
 				SpawnedActor->DistanceAtSpline = Target;
-
+				Target += SpawnedActor->VehicleLength * 0.5 + SpawnedActor->MinGap;
 			}
 
 

@@ -48,7 +48,7 @@ public:
 	float TimeHeadway = 1.5f; //T
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IDM|Params")
-	float MinGap; //s0​
+	float MinGap=20.0f; //s0​
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IDM|Params")
 	float Delta = 4.0f; //𝛿
