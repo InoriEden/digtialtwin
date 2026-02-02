@@ -21,7 +21,7 @@ ASplineRoad::ASplineRoad()
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatInstFinder(
-		TEXT("/Game/Digtial/Material/Car/Body_Inst.Body_Inst")
+		TEXT("/Game/Digtial/Material/Car/Car1/Body_Inst.Body_Inst")
 	);
 
 	if (MatInstFinder.Succeeded())
@@ -116,13 +116,13 @@ void ASplineRoad::CreateCar(int num)
 	for (int i = 0; i <= num; i++)
 	{
 		float SpawnStart = 0;
-		float RandomLocation=FMath::RandRange(10, 15);
+		float RandomLocation = FMath::RandRange(10, 15);
 		float Target = SpawnStart + RandomLocation * i;
 		if (Target < Spline->GetSplineLength())
 		{
 			FTransform SpawnTransform;
-			FVector CarLocation=Spline->GetLocationAtDistanceAlongSpline(Target, ESplineCoordinateSpace::World);
-			SpawnTransform.SetLocation(CarLocation+FVector(0, 0, 12));
+			FVector CarLocation = Spline->GetLocationAtDistanceAlongSpline(Target, ESplineCoordinateSpace::World);
+			SpawnTransform.SetLocation(CarLocation + FVector(0, 0, 12));
 			FVector CarTangent = Spline->GetTangentAtDistanceAlongSpline(Target, ESplineCoordinateSpace::World);
 			FRotator CarRotation = UKismetMathLibrary::MakeRotFromX(CarTangent);
 			SpawnTransform.SetRotation(CarRotation.Quaternion());
@@ -140,20 +140,20 @@ void ASplineRoad::CreateCar(int num)
 				);
 			if (SpawnedActor)
 			{
-				UMaterialInstanceDynamic*CarDynamicMaterial=UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, CarMaterialInterface);
+				/*UMaterialInstanceDynamic* CarDynamicMaterial = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, CarMaterialInterface);
 				FVector4 CarColor(
 					FMath::RandRange(0.f, 1.f),
 					FMath::RandRange(0.f, 1.f),
 					FMath::RandRange(0.f, 1.f),
 					1.f
 				);
-				CarDynamicMaterial->SetVectorParameterValue(TEXT("Param"),CarColor);
-				SpawnedActor->CarComponent->SetMaterial(0, CarDynamicMaterial);
+				CarDynamicMaterial->SetVectorParameterValue(TEXT("Param"), CarColor);
+				SpawnedActor->CarComponent->SetMaterial(0, CarDynamicMaterial);*/
 				SpawnedActor->SplineRoad = this;
 				SpawnedActor->DistanceAtSpline = Target;
 
 			}
-			
+
 
 		}
 	}

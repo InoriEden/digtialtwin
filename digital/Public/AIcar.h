@@ -48,7 +48,7 @@ public:
 	float TimeHeadway = 1.5f; //T
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IDM|Params")
-	float MinGap = 20.0f; //s0​
+	float MinGap; //s0​
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "IDM|Params")
 	float Delta = 4.0f; //𝛿
@@ -60,8 +60,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ExposeOnSpawn = "true"))
 	ASplineRoad* SplineRoad;
 
-	UStaticMesh* CarMesh;
-
+	UStaticMesh* CarMesh_1;
+	UStaticMesh* CarMesh_2;
+	TArray<UStaticMesh*> MeshCandidates;
 	
 
 	float DistanceAtSpline;
@@ -77,7 +78,8 @@ public:
 	float ComputeIDMAcceleration(
 		float CurrentSpeed,
 		float FrontSpeed,
-		float Gap) const;  //sa=gap
+		float Gap,
+		float CustomMinGap) const;  //sa=gap
 
 	UFUNCTION(BlueprintCallable)
 	float ComputeSpeedAndReturnDisance(float DeltaTime, float gap, float FrontVehicleSpped);
@@ -88,6 +90,8 @@ public:
 	void ChangeSplineRoad();
 
 	TArray<float> CalDistanceToLight();
+
+	UMaterialInterface* CarMaterialInterface;
 
 	
 

@@ -5,6 +5,7 @@
 #include "AICarController.h"
 #include "AIModule/Classes/Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetMaterialLibrary.h"
 
 // Sets default values
 AAIcar::AAIcar()
@@ -15,19 +16,51 @@ AAIcar::AAIcar()
 	SetRootComponent(Root);
 	AIControllerClass = AAICarController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	static ConstructorHelpers::FObjectFinder<UMaterialInstance> MatInstFinder(
+		TEXT("/Game/Digtial/Material/Car/Car1/Body_Inst.Body_Inst")
+	);
+
+	if (MatInstFinder.Succeeded())
+	{
+		CarMaterialInterface = MatInstFinder.Object; // ¿É¸³¸ø UMaterialInterface*
+	}
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshFinder(
-		TEXT("/Game/Digtial/Material/Car/gt-001004-vehicle.gt-001004-vehicle")
+		TEXT("/Game/Digtial/Material/Car/Car1/gt-001004-vehicle1.gt-001004-vehicle1")
 	);
 	if (MeshFinder.Succeeded())
 	{
-		CarMesh = MeshFinder.Object;
+		CarMesh_1 = MeshFinder.Object;
 
 	}
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshFinder2(
+		TEXT("/Game/Digtial/Material/Car/Car2/Car_2.Car_2")
+	);
+	if (MeshFinder2.Succeeded())
+	{
+		CarMesh_2 = MeshFinder2.Object;
+
+	}
+	MeshCandidates.Add(CarMesh_1);
+	MeshCandidates.Add(CarMesh_2);
 	CarComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Car"));
 	CarComponent->SetupAttachment(Root);
-	CarComponent->SetStaticMesh(CarMesh);
+	/*CarComponent->SetStaticMesh(CarMesh_1);*/
 	CarComponent->SetRelativeScale3D(FVector(0.1, 0.1, 0.1));
-	CarComponent->SetRelativeRotation(FRotator(0, 90, 0));
+	//if (CarComponent)
+	//{
+	//	FVector Size = CarComponent->Bounds.BoxExtent*2;
+	//	VehicleLength = Size.X;
+	//	UMaterialInstanceDynamic* CarDynamicMaterial = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, CarMaterialInterface);
+	//	FVector4 CarColor(
+	//		FMath::RandRange(0.f, 1.f),
+	//		FMath::RandRange(0.f, 1.f),
+	//		FMath::RandRange(0.f, 1.f),
+	//		1.f
+	//	);
+	//	CarDynamicMaterial->SetVectorParameterValue(TEXT("Param"), CarColor);
+	//	CarComponent->SetMaterial(0, CarDynamicMaterial);
+	//}
+	/*CarComponent->SetRelativeRotation(FRotator(0, 90, 0));*/
 	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(
 		TEXT("StimuliSource")
 		);
@@ -41,6 +74,25 @@ void AAIcar::BeginPlay()
 {
 	Super::BeginPlay();
 	Speed = DesiredSpeed * 0.8f;
+	if (MeshCandidates.Num() > 0)
+	{
+		int32 RandomIndex = FMath::RandRange(0, MeshCandidates.Num() - 1);
+		CarComponent->SetStaticMesh(MeshCandidates[RandomIndex]);
+		FVector4 CarColor(
+			FMath::RandRange(0.f, 1.f),
+			FMath::RandRange(0.f, 1.f),
+			FMath::RandRange(0.f, 1.f),
+			1.f
+		);
+		UMaterialInstanceDynamic* DynMat =CarComponent->CreateAndSetMaterialInstanceDynamic(0);
+		if (DynMat)
+		{
+			DynMat->SetVectorParameterValue(
+				TEXT("Param"),
+				CarColor
+			);
+		}
+	}
 }
 
 // Called every frame
@@ -69,12 +121,12 @@ void AAIcar::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 }
 
-float AAIcar::ComputeIDMAcceleration(float CurrentSpeed, float FrontSpeed, float Gap) const
+float AAIcar::ComputeIDMAcceleration(float CurrentSpeed, float FrontSpeed, float Gap, float CustomMinGap) const
 {
 	float dv = CurrentSpeed - FrontSpeed;
 
 	float sStar =
-		MinGap +
+		CustomMinGap +
 		TimeHeadway * CurrentSpeed +
 		(CurrentSpeed * dv) / (2.0f * FMath::Sqrt(MaxAcceleration * ComfortableDecel));
 
@@ -89,19 +141,30 @@ float AAIcar::ComputeIDMAcceleration(float CurrentSpeed, float FrontSpeed, float
 float AAIcar::ComputeSpeedAndReturnDisance(float DeltaTime, float gap, float FrontVehicleSpped)
 {
 	gap = FMath::Max(gap, 0.1f);
+	/*gap = FMath::Min(gap, MinGap + TimeHeadway * Speed);*/
 	TArray<float>LightResult = CalDistanceToLight();
 
 	Acceleration = ComputeIDMAcceleration(
 		Speed,
 		FrontVehicleSpped,
-		gap
+		gap,
+		20.0f
 	);
 	float Acceleration2 = ComputeIDMAcceleration(
 		Speed,
 		LightResult[1],
-		LightResult[0]
+		LightResult[0],
+		200.0f
 	);
-	float BestAcceleration = FMath::Min(Acceleration, Acceleration2);
+	float BestAcceleration;
+	if (LightResult[1] == 0.1f)//IsGreen?
+	{
+		 BestAcceleration = Acceleration2;
+	}
+	else
+	{
+		 BestAcceleration = FMath::Min(Acceleration, Acceleration2);
+	}
 	Speed += BestAcceleration * DeltaTime;
 	Speed = FMath::Max(Speed, 0.0f);
 
@@ -121,11 +184,12 @@ TArray<float> AAIcar::CalculateShortestDistance()
 			{
 				FVector T1 = SplineRoad->Spline->GetLocationAtDistanceAlongSpline(DistanceAtSpline, ESplineCoordinateSpace::World);
 				FVector T2 = Car->SplineRoad->Spline->GetLocationAtDistanceAlongSpline(Car->DistanceAtSpline, ESplineCoordinateSpace::World);
-				float length = (T1-T2).Size();
+				float length = (Car->DistanceAtSpline - Car->VehicleLength * 0.5) - (DistanceAtSpline + VehicleLength * 0.5);
 				if (length< ShortestDistance)
 				{
 					ShortestDistance = length;
 					TheFrontCarSpeed = Car->Speed;
+					
 				}
 				
 			}
@@ -175,7 +239,7 @@ TArray<float> AAIcar::CalDistanceToLight()
 				FVector T2 = AICarConCast->DetectLights[0]->GetActorLocation();
 				float length = (T1 - T2).Size();
 				result.Add(length);
-				result.Add(0);
+				result.Add(0.1f);
 				return result;
 			}
 		}
