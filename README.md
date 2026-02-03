@@ -17,14 +17,16 @@ Main features:
 - RNN / DCRNN-based prediction models
 - Training and evaluation pipeline
 
----
+
 
 ##  Tech Stack
 
-- Language: Python
+- Language: Python/UEC++/UEBluePrint
 - Framework: torch
 - Data Processing: NumPy, Pandas
 - Visualization: Matplotlib
-- Environment: Linux / Windows
+- Environment:  Windows
 
----
+  
+
+
