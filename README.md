@@ -14,7 +14,7 @@ Main features:
 - Traffic speed data preprocessing and normalization
 - Graph construction based on road correlations
 - Custom PyTorch Dataset and DataLoader
-- RNN / DCRNN-based prediction models
+- DCRNN/GRU-based prediction models
 - Training and evaluation pipeline
 
 
