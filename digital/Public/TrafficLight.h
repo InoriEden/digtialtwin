@@ -6,6 +6,14 @@
 #include "GameFramework/Actor.h"
 #include "TrafficLight.generated.h"
 
+UENUM(BlueprintType)
+enum class EMonsterState : uint8
+{
+	Green    UMETA(DisplayName = "Green"),
+	Yellow    UMETA(DisplayName = "Yellow"),
+	Red  UMETA(DisplayName = "Red"),
+};
+
 UCLASS()
 class DIGITAL_API ATrafficLight : public AActor
 {
@@ -25,4 +33,29 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Light")
 	bool IsGreen;
+
+	UPROPERTY(BlueprintReadWrite)
+	EMonsterState LightState;
+
+	void SwitchTrafficLightByState(EMonsterState State);
+
+	UStaticMesh* LightMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Light")
+	UStaticMeshComponent* LightComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USceneComponent* Root;
+
+	UMaterialInstanceDynamic* Green;
+
+	UMaterialInstanceDynamic* Yellow;
+
+	UMaterialInstanceDynamic* Red;
+
+	FTimerHandle TimerHandleGreen;
+
+	FTimerHandle TimerHandleYellow;
+
+	FTimerHandle TimerHandleRed;
 };

@@ -14,7 +14,7 @@ AAICarController::AAICarController()
 	// ====== Sight ÅäÖÃ ======
 	SightConfig->SightRadius = 600;
 	SightConfig->LoseSightRadius = 600;
-	SightConfig->PeripheralVisionAngleDegrees = 90.f;
+	SightConfig->PeripheralVisionAngleDegrees = 60.f;
 	SightConfig->SetMaxAge(0.1f);
 
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;

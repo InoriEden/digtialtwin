@@ -145,14 +145,15 @@ float AAIcar::ComputeSpeedAndReturnDisance(float DeltaTime, float gap, float Fro
 		200.0f
 	);
 	float BestAcceleration;
-	if (LightResult[1] == 0.1f)//IsGreen?
-	{
-		 BestAcceleration = Acceleration2;
-	}
-	else
-	{
-		 BestAcceleration = FMath::Min(Acceleration, Acceleration2);
-	}
+	BestAcceleration = FMath::Min(Acceleration, Acceleration2);
+	//if (LightResult[1] == 0.1f)//IsGreen?
+	//{
+	//	 BestAcceleration = Acceleration2;
+	//}
+	//else
+	//{
+	//	 BestAcceleration = FMath::Min(Acceleration, Acceleration2);
+	//}
 	Speed += BestAcceleration * DeltaTime;
 	Speed = FMath::Max(Speed, 0.0f);
 
@@ -172,7 +173,7 @@ TArray<float> AAIcar::CalculateShortestDistance()
 			{
 				FVector T1 = SplineRoad->Spline->GetLocationAtDistanceAlongSpline(DistanceAtSpline, ESplineCoordinateSpace::World);
 				FVector T2 = Car->SplineRoad->Spline->GetLocationAtDistanceAlongSpline(Car->DistanceAtSpline, ESplineCoordinateSpace::World);
-				float length = (Car->DistanceAtSpline - Car->VehicleLength * 0.5) - (DistanceAtSpline + VehicleLength * 0.5);
+				float length = (T1 - T2).Size();
 				if (length< ShortestDistance)
 				{
 					ShortestDistance = length;
@@ -211,10 +212,32 @@ TArray<float> AAIcar::CalDistanceToLight()
 	float ShortestDistance = 1e9;
 	float TheFrontLightSpeed = 0;
 	TArray<float> result;
+	
 	if (AAICarController* AICarConCast = Cast<AAICarController>(GetController()))
 	{
 		if (!AICarConCast->DetectLights.IsEmpty())
 		{
+
+			float RemainingTime=GetWorld()->GetTimerManager().GetTimerRemaining(AICarConCast->DetectLights[0]->TimerHandleGreen);
+			float LocationToLight = (GetActorLocation() - AICarConCast->DetectLights[0]->GetActorLocation()).Size();
+			FVector CarForward = GetActorForwardVector();
+			FVector ToLight = AICarConCast->DetectLights[0]->GetActorLocation() - GetActorLocation();
+			float dot = FVector::DotProduct(CarForward, ToLight);
+			if (dot < 0)
+			{
+				result.Add(1e9);
+				result.Add(0);
+				return result;
+			}
+			if (RemainingTime < 2.5f && Speed * RemainingTime < ToLight.Size())
+			{
+				FVector T1 = SplineRoad->Spline->GetLocationAtDistanceAlongSpline(DistanceAtSpline, ESplineCoordinateSpace::World);
+				FVector T2 = AICarConCast->DetectLights[0]->GetActorLocation();
+				float length = (T1 - T2).Size();
+				result.Add(length);
+				result.Add(0);
+				return result;
+			}
 			if (AICarConCast->DetectLights[0]->IsGreen)
 			{
 				result.Add(ShortestDistance);
@@ -227,7 +250,7 @@ TArray<float> AAIcar::CalDistanceToLight()
 				FVector T2 = AICarConCast->DetectLights[0]->GetActorLocation();
 				float length = (T1 - T2).Size();
 				result.Add(length);
-				result.Add(0.1f);
+				result.Add(0);
 				return result;
 			}
 		}
